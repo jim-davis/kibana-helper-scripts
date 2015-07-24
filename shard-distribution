@@ -1,0 +1,25 @@
+#!/bin/sh
+curl -s "localhost:9200/_cat/shards" | grep -v UNASSIGNED |
+awk '{print $8 " " $3}' | sort | 
+awk '
+BEGIN {host="";p=0;r=0;total_p=0;total_r=0;total = 0;print "host\tprimary\treplica\ttotal"}
+{total += 1;}
+{
+  if ($1 == host) {
+    if ($2 == "p") {p+=1; total_p+=1;} else {r+=1;total_r+=1;}}
+  else {
+    if (host != "") {
+      print host "\t" p "\t" r "\t" p+r
+    }
+    host=$1;
+    p=0;r=0;
+    if ($2 == "p") {
+      p=1;
+      total_p+=1;
+    } else {
+      r=1;
+      total_r+=1;
+    }
+  }
+}
+END {print host "\t" p "\t" r "\t" p+r; print "total " total_p "\t" total_r "\t" total}'
