@@ -141,7 +141,7 @@ def get_dashboard(cluster, id)
 end
 
 def get_objects (cluster, type, ids)
-  q = JSON.generate({query: {filtered: {filter: {ids: {values: ids}}}}})
+  q = JSON.generate({from: 0, size: 1000, query: {filtered: {filter: {ids: {values: ids}}}}})
   Net::HTTP.start(cluster[:host], cluster[:port]) do |http|
     res = http.post("#{cluster[:index]}/#{type}/_search", q)
     if res.code == "200"
