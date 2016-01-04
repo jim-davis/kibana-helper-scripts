@@ -130,7 +130,8 @@ end
 
 def get_dashboard(cluster, id)
   Net::HTTP.start(cluster[:host], cluster[:port]) do |http|
-    res = http.get("#{cluster[:index]}/dashboard/#{id}")
+	dashboard_encode = URI::encode(id)
+    res = http.get("#{cluster[:index]}/dashboard/#{dashboard_encode}")
     if res.code == "200"
       JSON.parse(res.body)
     else
