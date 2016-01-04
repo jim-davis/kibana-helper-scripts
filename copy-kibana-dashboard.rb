@@ -66,12 +66,12 @@ def parse_args
     ['--verbose', GetoptLong::NO_ARGUMENT],
     ['--quiet', GetoptLong::NO_ARGUMENT],
     ['--dashboard', '-d', GetoptLong::REQUIRED_ARGUMENT],
-    ['--from-host', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--from-port', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--from-index', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--to-host', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--to-port', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--to-index', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--from-host', GetoptLong::REQUIRED_ARGUMENT],
+    ['--from-port', GetoptLong::REQUIRED_ARGUMENT],
+    ['--from-index', GetoptLong::REQUIRED_ARGUMENT],
+    ['--to-host', GetoptLong::REQUIRED_ARGUMENT],
+    ['--to-port', GetoptLong::REQUIRED_ARGUMENT],
+    ['--to-index', GetoptLong::REQUIRED_ARGUMENT],
     ['--help', '-h', GetoptLong::NO_ARGUMENT]
   )
 
