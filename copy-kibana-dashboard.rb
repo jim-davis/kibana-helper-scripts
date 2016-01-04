@@ -54,7 +54,11 @@ def main
   put_objects(new, VISUALIZATION, map_objects(visualizations))
 
   saved_search_ids =  visualizations.map{|v| v["_source"]["savedSearchId"]}.reject{|x| x.nil?}
-  put_objects(new, SEARCH, map_objects(get_objects(old, SEARCH, saved_search_ids)))
+  saved_search = get_objects(old, SEARCH, saved_search_ids)
+  if new[:saved_search_index]
+    saved_search.each {|s| set_saved_search_index(s, new[:saved_search_index])}
+  end
+  put_objects(new, SEARCH, map_objects(saved_search))
 end
 
 def parse_args
@@ -63,16 +67,17 @@ def parse_args
   dashboard_id = nil
 
   opts = GetoptLong.new(
-    ['--verbose', GetoptLong::NO_ARGUMENT],
-    ['--quiet', GetoptLong::NO_ARGUMENT],
+    ['--verbose',         GetoptLong::NO_ARGUMENT],
+    ['--quiet',           GetoptLong::NO_ARGUMENT],
     ['--dashboard', '-d', GetoptLong::REQUIRED_ARGUMENT],
-    ['--from-host', GetoptLong::REQUIRED_ARGUMENT],
-    ['--from-port', GetoptLong::REQUIRED_ARGUMENT],
-    ['--from-index', GetoptLong::REQUIRED_ARGUMENT],
-    ['--to-host', GetoptLong::REQUIRED_ARGUMENT],
-    ['--to-port', GetoptLong::REQUIRED_ARGUMENT],
-    ['--to-index', GetoptLong::REQUIRED_ARGUMENT],
-    ['--help', '-h', GetoptLong::NO_ARGUMENT]
+    ['--from-host',       GetoptLong::REQUIRED_ARGUMENT],
+    ['--from-port',       GetoptLong::REQUIRED_ARGUMENT],
+    ['--from-index',      GetoptLong::REQUIRED_ARGUMENT],
+    ['--to-host',         GetoptLong::REQUIRED_ARGUMENT],
+    ['--to-port',         GetoptLong::REQUIRED_ARGUMENT],
+    ['--to-index',        GetoptLong::REQUIRED_ARGUMENT],
+    ['--to-saved-search-index', GetoptLong::REQUIRED_ARGUMENT],
+    ['--help', '-h',      GetoptLong::NO_ARGUMENT]
   )
 
   opts.each do |opt, arg|
@@ -98,6 +103,8 @@ def parse_args
       to_cluster[:port] = Integer(arg)
     when '--to-index'
       to_cluster[:index] = arg
+    when '--to-saved-search-index'
+      to_cluster[:saved_search_index] = arg
     end
   end
 
@@ -120,6 +127,8 @@ Usage:
 --to-host HOST (default: localhost)
 --to-port POST (default: 9200)
 --to-index INDEX (default: .kibana)
+--to-saved-search-index (default: don't change)
+    change index for saved search
 --verbose
     print object keys as they are copied
 --quiet
@@ -193,6 +202,12 @@ def put_object(http, index, type, id, object)
     STDOUT.puts res.class.name
     STDERR.puts "Result #{res.code} #{res.message}"
   end
+end
+
+def set_saved_search_index(saved_search, new_index)
+  ssj = JSON.parse(saved_search["_source"]["kibanaSavedObjectMeta"]["searchSourceJSON"])
+  ssj["index"] = new_index
+  saved_search["_source"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = JSON.generate(ssj)
 end
 
 main if __FILE__ == $0
